@@ -56,10 +56,10 @@ function processor(input) {
         //make triples
         output =  'geoR:' + Nid + ' a geoV:Project ; dcterms:title """'+Titel+'""" ; ';
         _.forEach(keywords, function(keyword, i) {
-            output = output + ' dcterms:subject "' + keyword.trim() + '" ;';
+            output = output + ' dcterms:subject "' + keyword.trim().replace(/\//g, ' ').replace(/\\/g, ' ') + '" ;';
         });
         _.forEach(partners, function(partner, i) {
-            output = output + ' geoV:partner "' + partner.trim() + '" ;';
+            output = output + ' geoV:partner "' + partner.trim().replace(/\//g, ' ').replace(/\\/g, ' ') + '" ;';
         });
         output = output + ' dcterms:description """' + Berichttekst + '""" ;';
         output = output + ' geoV:path """' + Pad + '""" ;';
