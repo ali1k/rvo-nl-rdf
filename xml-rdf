@@ -52,14 +52,14 @@ function processor(input) {
         if(Geolocatie){
             point = Geolocatie.replace(' (', '(');
         }
-        var Downloads = item.Downloads.trim();
+        var Downloads = item.Downloads.trim().replace(/\//g, ' ').replace(/\\/g, ' ');
         //make triples
         output =  'geoR:' + Nid + ' a geoV:Project ; dcterms:title """'+Titel+'""" ; ';
         _.forEach(keywords, function(keyword, i) {
-            output = output + ' dcterms:subject "' + keyword.trim().replace(/\//g, ' ').replace(/\\/g, ' ') + '" ;';
+            output = output + ' dcterms:subject """' + keyword.trim().replace(/\//g, ' ').replace(/\\/g, ' ') + '"" ;';
         });
         _.forEach(partners, function(partner, i) {
-            output = output + ' geoV:partner "' + partner.trim().replace(/\//g, ' ').replace(/\\/g, ' ') + '" ;';
+            output = output + ' geoV:partner """' + partner.trim().replace(/\//g, ' ').replace(/\\/g, ' ') + '""" ;';
         });
         output = output + ' dcterms:description """' + Berichttekst + '""" ;';
         output = output + ' geoV:path """' + Pad + '""" ;';
