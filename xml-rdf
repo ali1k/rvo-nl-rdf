@@ -26,7 +26,7 @@ function processor(input) {
     var output = '';
     parser.collect('node');
     parser.on('endElement: node', function(item) {
-        var Titel = item.Titel.trim();
+        var Titel = item.Titel.trim().replace(/\//g, ' ').replace(/\\/g, ' ');
         var keywords, Allterms = item.Allterms.trim();
         if(Allterms) {
             keywords = Allterms.split(';');
