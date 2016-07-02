@@ -1,0 +1,22 @@
+{
+  "name": "rvo-nl-rdf",
+  "version": "1.0.0",
+  "description": "Scripts to convert RVO data for the Netherlands to RDF",
+  "keywords": [
+    "xml",
+    "rdf",
+    "conversion"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "./test"
+  },
+  "dependencies": {
+    "fs": "0.0.2",
+    "http": "0.0.0",
+    "lodash": "^4.6.1",
+    "xml-stream": "^0.4.5"
+  },
+  "author": "Ali Khalili <hyperir@gmail.com> (http://ali1k.com)",
+  "license": "ISC"
+}

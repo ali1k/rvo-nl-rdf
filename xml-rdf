@@ -1,0 +1,126 @@
+#!/usr/bin/env node
+if (process.argv.length < 3 || process.argv.length > 4) {
+  die('RVO-NL xml to RDF\n' +
+      'converts RVO data' +
+      'to RDF TTL Format.\n\n' +
+      'usage: xml-rdf [file_or_uri_to_convert]');
+}
+var fs = require ('fs');
+var http = require ('http');
+var _ = require("lodash");
+var XmlStream = require("xml-stream");
+
+var source = process.argv[2];
+// Open HTTP stream if the source is a URL
+if (source.match(/^https?:\/\//))
+    http.request(source, processor).end();
+// Open a file stream otherwise
+else
+    processor(fs.createReadStream(source,'utf8'));
+
+/* Process the specified input */
+function processor(input) {
+    var parser  = new XmlStream(input);
+    var prefixes = '@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> . @prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> . @prefix edm: <http://www.europeana.eu/schemas/edm/> . @prefix foaf: <http://xmlns.com/foaf/0.1/> . @prefix owl: <http://www.w3.org/2002/07/owl#> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> . @prefix skos: <http://www.w3.org/2004/02/skos/core#> . @prefix dcterms: <http://purl.org/dc/terms/> . @prefix geoV: <http://geo.risis.eu/vocabulary/rvo-nl/> . @prefix geoR: <http://geo.risis.eu/rvo-nl/> .';
+    console.log(prefixes);
+    var output = '';
+    parser.collect('node');
+    parser.on('endElement: node', function(item) {
+        var Titel = item.Titel.trim();
+        var keywords, Allterms = item.Allterms.trim();
+        if(Allterms) {
+            keywords = Allterms.split(';');
+        }else{
+            keywords = [];
+        }
+        var Berichttekst = item.Berichttekst.trim();
+        var Nid = item.Nid.trim();
+        var Pad = item.Pad.trim();
+        var Updatedate = item.Updatedate.trim();
+        var Budget = item.Budget.trim();
+        var Status = item.Status.trim();
+        var Projectnummer = item.Projectnummer.trim();
+        var Aanvrager = item['Aanvrager-ontvanger'].trim();
+        var partners, Projectpartner = item['Projectpartner-s-'].trim();
+        if(Projectpartner) {
+            partners = Projectpartner.split(',');
+        }else{
+            partners = [];
+        }
+        var Jaar = item.Jaar.trim().replace(' ', '');
+        var point, Geolocatie = item.Geolocatie.trim();
+        if(Geolocatie){
+            point = Geolocatie.replace(' (', '(');
+        }
+        var Downloads = item.Downloads.trim();
+        //make triples
+        output =  'geoR:' + Nid + ' a geoV:Project ; dcterms:title """'+Titel+'""" ; ';
+        _.forEach(keywords, function(keyword, i) {
+            output = output + ' dcterms:subject "' + keyword.trim() + '" ;';
+        });
+        _.forEach(partners, function(partner, i) {
+            output = output + ' geoV:partner "' + partner.trim() + '" ;';
+        });
+        output = output + ' dcterms:description """' + Berichttekst + '""" ;';
+        output = output + ' geoV:path """' + Pad + '""" ;';
+        output = output + ' geoV:updateDate """' + Updatedate + '""" ;';
+        output = output + ' edm:year "' + Jaar + '" ;';
+        output = output + ' geoV:budget """' + Budget + '""" ;';
+        output = output + ' geoV:status """' + Status + '""" ;';
+        output = output + ' geoV:projectNumber """' + Projectnummer + '""" ;';
+        output = output + ' geoV:applicant """' + Aanvrager + '""" ;';
+        if(point){
+            output =  output + 'geo:geometry "'+point+'"^^<http://www.openlinksw.com/schemas/virtrdf#Geometry> ;';
+        }
+        output = output + ' geoV:Nid "' + Nid + '" .';
+        console.log(output);
+      console.log('-------------------------------');
+    })
+    /*
+    _.forEach(currentObj.features, function(node, i) {
+        if(level == 'gem'){
+            output =  'geoR:' + node.properties.GM_CODE + ' a geoV:AdministrativeArea ; a geoV:Municipality ; geoV:level "2"^^xsd:integer ; dcterms:title """'+node.properties.GM_NAAM+'""" ; ';
+        }else if(level == 'wijk'){
+            output =  'geoR:' + node.properties.WK_CODE + ' a geoV:AdministrativeArea ; a geoV:District ; geoV:level "1"^^xsd:integer ; dcterms:title """'+node.properties.WK_NAAM+'""" ; ';
+        }else if(level == 'buurt'){
+            output =  'geoR:' + node.properties.BU_CODE + ' a geoV:AdministrativeArea ; a geoV:Neighbourhood ; geoV:level "3"^^xsd:integer ; dcterms:title """'+node.properties.BU_NAAM+'""" ; ';
+       }
+        output =  output + 'geoV:ISO "NLD" ; ';
+        for(var prop in node.properties){
+            if(prop !='GM_NAAM' && prop !='WK_NAAM' && prop !='BU_NAAM'){
+                output =  output + 'geoV:'+prop+' "' + node.properties[prop]+ '" ; ';
+            }
+        }
+        //console.log(node.properties.CODE_of_fu);
+        //console.log(node.properties.CLASS);
+        var pType = node.geometry.type;
+        //console.log(pType);
+        output =  output + 'geoV:shapeType "' + pType+ '" ; ';
+        if(pType === 'Polygon'){
+            var tmpp = [];
+            _.forEach(node.geometry.coordinates[0], function(coordinate, ii) {
+                tmpp.push(coordinate.join(' '));
+            });
+            output =  output + 'geo:geometry "POLYGON((' + tmpp.join(',') + '))"^^<http://www.openlinksw.com/schemas/virtrdf#Geometry> .';
+            //console.log('POLYGON((' + tmpp.join(',') + '))');
+        } else if(pType === 'MultiPolygon'){
+            var tmppTop = [];
+            _.forEach(node.geometry.coordinates, function(coordinateset, ii) {
+                var tmpp = [];
+                _.forEach(coordinateset[0], function(coordinate, iii) {
+                    tmpp.push(coordinate.join(' '));
+                });
+                tmppTop.push('((' + tmpp.join(',') + '))');
+            });
+            output =  output + 'geo:geometry "MULTIPOLYGON(' + tmppTop.join(',') + ')"^^<http://www.openlinksw.com/schemas/virtrdf#Geometry> .';
+            //console.log('MULTIPOLYGON(' + tmppTop.join(',') + ')');
+        }
+        console.log(output);
+    });
+    */
+}
+/* Halt execution with an error message. */
+function die(message) {
+  console.log(message);
+  process.exit(1);
+}
