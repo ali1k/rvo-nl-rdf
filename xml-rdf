@@ -33,7 +33,7 @@ function processor(input) {
         }else{
             keywords = [];
         }
-        var Berichttekst = item.Berichttekst.trim();
+        var Berichttekst = item.Berichttekst.trim().replace(/\//g, ' ');
         var Nid = item.Nid.trim();
         var Pad = item.Pad.trim();
         var Updatedate = item.Updatedate.trim();
