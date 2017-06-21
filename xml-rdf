@@ -27,6 +27,7 @@ function processor(input) {
     var counter=0;
     parser.collect('node');
     parser.on('endElement: node', function(item) {
+<<<<<<< HEAD
       counter++;
       console.log('#----------------------- '+counter+' ---------------------------------');
       if(item){
@@ -35,12 +36,16 @@ function processor(input) {
         if(item.Allterms){
           Allterms = item.Allterms.trim();
         }
+=======
+        var Titel = item.Titel.trim().replace(/\//g, ' ').replace(/\\/g, ' ');
+        var keywords, Allterms = item.Allterms.trim();
+>>>>>>> 9cd4b711b27d8612465c87d3b2903d91e4eed9e5
         if(Allterms) {
             keywords = Allterms.split(';');
         }else{
             keywords = [];
         }
-        var Berichttekst = item.Berichttekst.trim();
+        var Berichttekst = item.Berichttekst.trim().replace(/\//g, ' ').replace(/\\/g, ' ');
         var Nid = item.Nid.trim();
         var Pad = item.Pad.trim();
         var Updatedate = item.Updatedate.trim();
@@ -66,10 +71,10 @@ function processor(input) {
         //make triples
         output =  'geoR:' + Nid + ' a geoV:Project ; dcterms:title """'+Titel+'""" ; ';
         _.forEach(keywords, function(keyword, i) {
-            output = output + ' dcterms:subject "' + keyword.trim() + '" ;';
+            output = output + ' dcterms:subject """' + keyword.trim().replace(/\//g, ' ').replace(/\\/g, ' ') + '""" ;';
         });
         _.forEach(partners, function(partner, i) {
-            output = output + ' geoV:partner "' + partner.trim() + '" ;';
+            output = output + ' geoV:partner """' + partner.trim().replace(/\//g, ' ').replace(/\\/g, ' ') + '""" ;';
         });
         output = output + ' dcterms:description """' + Berichttekst + '""" ;';
         output = output + ' geoV:path """' + Pad + '""" ;';
@@ -84,52 +89,14 @@ function processor(input) {
         }
         output = output + ' geoV:Nid "' + Nid + '" .';
         console.log(output);
+<<<<<<< HEAD
     }else{
       console.log('#nullllllll------------------');
     }
+=======
+      //console.log('-------------------------------');
+>>>>>>> 9cd4b711b27d8612465c87d3b2903d91e4eed9e5
     })
-    /*
-    _.forEach(currentObj.features, function(node, i) {
-        if(level == 'gem'){
-            output =  'geoR:' + node.properties.GM_CODE + ' a geoV:AdministrativeArea ; a geoV:Municipality ; geoV:level "2"^^xsd:integer ; dcterms:title """'+node.properties.GM_NAAM+'""" ; ';
-        }else if(level == 'wijk'){
-            output =  'geoR:' + node.properties.WK_CODE + ' a geoV:AdministrativeArea ; a geoV:District ; geoV:level "1"^^xsd:integer ; dcterms:title """'+node.properties.WK_NAAM+'""" ; ';
-        }else if(level == 'buurt'){
-            output =  'geoR:' + node.properties.BU_CODE + ' a geoV:AdministrativeArea ; a geoV:Neighbourhood ; geoV:level "3"^^xsd:integer ; dcterms:title """'+node.properties.BU_NAAM+'""" ; ';
-       }
-        output =  output + 'geoV:ISO "NLD" ; ';
-        for(var prop in node.properties){
-            if(prop !='GM_NAAM' && prop !='WK_NAAM' && prop !='BU_NAAM'){
-                output =  output + 'geoV:'+prop+' "' + node.properties[prop]+ '" ; ';
-            }
-        }
-        //console.log(node.properties.CODE_of_fu);
-        //console.log(node.properties.CLASS);
-        var pType = node.geometry.type;
-        //console.log(pType);
-        output =  output + 'geoV:shapeType "' + pType+ '" ; ';
-        if(pType === 'Polygon'){
-            var tmpp = [];
-            _.forEach(node.geometry.coordinates[0], function(coordinate, ii) {
-                tmpp.push(coordinate.join(' '));
-            });
-            output =  output + 'geo:geometry "POLYGON((' + tmpp.join(',') + '))"^^<http://www.openlinksw.com/schemas/virtrdf#Geometry> .';
-            //console.log('POLYGON((' + tmpp.join(',') + '))');
-        } else if(pType === 'MultiPolygon'){
-            var tmppTop = [];
-            _.forEach(node.geometry.coordinates, function(coordinateset, ii) {
-                var tmpp = [];
-                _.forEach(coordinateset[0], function(coordinate, iii) {
-                    tmpp.push(coordinate.join(' '));
-                });
-                tmppTop.push('((' + tmpp.join(',') + '))');
-            });
-            output =  output + 'geo:geometry "MULTIPOLYGON(' + tmppTop.join(',') + ')"^^<http://www.openlinksw.com/schemas/virtrdf#Geometry> .';
-            //console.log('MULTIPOLYGON(' + tmppTop.join(',') + ')');
-        }
-        console.log(output);
-    });
-    */
 }
 /* Halt execution with an error message. */
 function die(message) {
