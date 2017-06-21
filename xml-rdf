@@ -24,10 +24,17 @@ function processor(input) {
     var prefixes = '@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> . @prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> . @prefix edm: <http://www.europeana.eu/schemas/edm/> . @prefix foaf: <http://xmlns.com/foaf/0.1/> . @prefix owl: <http://www.w3.org/2002/07/owl#> . @prefix xsd: <http://www.w3.org/2001/XMLSchema#> . @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> . @prefix skos: <http://www.w3.org/2004/02/skos/core#> . @prefix dcterms: <http://purl.org/dc/terms/> . @prefix geoV: <http://geo.risis.eu/vocabulary/rvo-nl/> . @prefix geoR: <http://geo.risis.eu/rvo-nl/> .';
     console.log(prefixes);
     var output = '';
+    var counter=0;
     parser.collect('node');
     parser.on('endElement: node', function(item) {
+      counter++;
+      console.log('#----------------------- '+counter+' ---------------------------------');
+      if(item){
         var Titel = item.Titel.trim();
-        var keywords, Allterms = item.Allterms.trim();
+        var keywords, Allterms;
+        if(item.Allterms){
+          Allterms = item.Allterms.trim();
+        }
         if(Allterms) {
             keywords = Allterms.split(';');
         }else{
@@ -41,18 +48,21 @@ function processor(input) {
         var Status = item.Status.trim();
         var Projectnummer = item.Projectnummer.trim();
         var Aanvrager = item['Aanvrager-ontvanger'].trim();
-        var partners, Projectpartner = item['Projectpartner-s-'].trim();
-        if(Projectpartner) {
+        var partners, Projectpartner;
+        if(item['Projectpartner-s-']) {
+            Projectpartner = item['Projectpartner-s-'].trim();
             partners = Projectpartner.split(',');
         }else{
             partners = [];
         }
+        partners = [];
         var Jaar = item.Jaar.trim().replace(' ', '');
-        var point, Geolocatie = item.Geolocatie.trim();
-        if(Geolocatie){
+        var point, Geolocatie;
+        if(item.Geolocatie){
+            Geolocatie = item.Geolocatie.trim();
             point = Geolocatie.replace(' (', '(');
         }
-        var Downloads = item.Downloads.trim();
+        //var Downloads = item.Downloads.trim();
         //make triples
         output =  'geoR:' + Nid + ' a geoV:Project ; dcterms:title """'+Titel+'""" ; ';
         _.forEach(keywords, function(keyword, i) {
@@ -74,7 +84,9 @@ function processor(input) {
         }
         output = output + ' geoV:Nid "' + Nid + '" .';
         console.log(output);
-      console.log('-------------------------------');
+    }else{
+      console.log('#nullllllll------------------');
+    }
     })
     /*
     _.forEach(currentObj.features, function(node, i) {
